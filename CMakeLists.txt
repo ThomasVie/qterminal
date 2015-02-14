@@ -2,41 +2,21 @@ cmake_minimum_required(VERSION 2.8)
 
 project(qterminal)
 
-option(USE_SYSTEM_QXT "Use system Qxt Library for global shortcuts" ON)
-option(USE_QT5 "Build using Qt5. Default OFF." OFF)
-
 set(STR_VERSION "0.6.0")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-if(USE_QT5 AND USE_SYSTEM_QXT)
-    message(FATAL_ERROR "Unable to use system qxt with qt5 now")
-endif()
-
-if(USE_QT5)
-    find_package(Qt5Widgets REQUIRED)
-    find_package(Qt5LinguistTools REQUIRED)
-    find_package(QTermWidget5 REQUIRED)
-    message(STATUS "Qt5 version: ${Qt5Core_VERSION_STRING}")
-else()
-    find_package(QTermWidget4 REQUIRED)
-endif()
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5LinguistTools REQUIRED)
+find_package(QTermWidget5 REQUIRED)
+message(STATUS "Qt5 version: ${Qt5Core_VERSION_STRING}")
 
 include(${QTERMWIDGET_USE_FILE})
 
-if(USE_SYSTEM_QXT)
-    message(STATUS "Using system Qxt...")
-    find_package(Qxt REQUIRED COMPONENTS QxtCore QxtGui)
-    if(NOT QXT_FOUND)
-        message(FATAL_ERROR "System Qxt not found. Install Qxt devel package or use -DUSE_SYSTEM_QXT=0 to build with internal copy of this library")
-    endif()
-
-    set(QXT_INCLUDE_DIRS "${QXT_INCLUDE_PATH}/QxtCore" "${QXT_INCLUDE_PATH}/QxtGui")
-else()
-    message(STATUS "Using bundled Qxt...")
-    set(QXT_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/third-party")
-endif()
+# TODO remove Qxt
+message(STATUS "Using bundled Qxt...")
+set(QXT_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/third-party")
 
 
 if(APPLE)
@@ -108,19 +88,12 @@ set(QTERM_TS
 	src/translations/qterminal_ru.ts
 )
 
-if(USE_QT5)
-    qt5_wrap_ui( QTERM_UI ${QTERM_UI_SRC} )
-    qt5_wrap_cpp( QTERM_MOC ${QTERM_MOC_SRC} )
-    qt5_add_resources( QTERM_RCC ${QTERM_RCC_SRC} )
-    qt5_add_translation( QTERM_QM ${QTERM_TS} )
-    # bundled qt5 version of libqxt requires private headers (as for 2014-05-27)
-    include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
-else()
-    qt4_wrap_ui(QTERM_UI ${QTERM_UI_SRC})
-    qt4_wrap_cpp(QTERM_MOC ${QTERM_MOC_SRC})
-    qt4_add_resources(QTERM_RCC ${QTERM_RCC_SRC})
-    qt4_add_translation(QTERM_QM ${QTERM_TS})
-endif()
+qt5_wrap_ui( QTERM_UI ${QTERM_UI_SRC} )
+qt5_wrap_cpp( QTERM_MOC ${QTERM_MOC_SRC} )
+qt5_add_resources( QTERM_RCC ${QTERM_RCC_SRC} )
+qt5_add_translation( QTERM_QM ${QTERM_TS} )
+# bundled qt5 version of libqxt requires private headers (as for 2014-05-27)
+include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
 include_directories (
     "${CMAKE_SOURCE_DIR}"
